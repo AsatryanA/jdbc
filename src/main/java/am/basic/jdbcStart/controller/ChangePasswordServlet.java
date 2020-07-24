@@ -28,6 +28,7 @@ public class ChangePasswordServlet extends HttpServlet {
         String newPassword = request.getParameter(NEW_PASSWORD_PARAM_KEY);
 
 
+
         try {
 
             User sessionUser = (User) request.getSession().getAttribute(USER_ATTRIBUTE_KEY);
