@@ -60,6 +60,8 @@ public class StartServlet extends HttpServlet {
         } catch (RuntimeException exception) {
             request.setAttribute(MESSAGE_ATTRIBUTE_KEY, INTERNAL_ERROR_MESSAGE);
             request.getRequestDispatcher(INDEX_PAGE).forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }

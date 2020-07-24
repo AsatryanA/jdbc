@@ -4,6 +4,7 @@ import am.basic.jdbcStart.model.User;
 import am.basic.jdbcStart.model.exceptions.*;
 import am.basic.jdbcStart.repository.UserRepository;
 import am.basic.jdbcStart.util.DataSource;
+import am.basic.jdbcStart.util.encoder.Encryptor;
 import am.basic.jdbcStart.util.encoder.Generator;
 import am.basic.jdbcStart.util.encoder.Md5Encoder;
 
@@ -17,12 +18,12 @@ public class UserService {
     private UserRepository userRepository = new UserRepository(new DataSource());
 
 
-    public void register(User user) throws DuplicateDataException, InternalServerException {
+    public void register(User user) throws Exception {
 
         try {
             User duplicate = userRepository.getByUsername(user.getUsername());
             DuplicateDataException.check(duplicate != null, DUPLICATE_USER_MESSAGE);
-            user.setPassword(Md5Encoder.encode(user.getPassword()));
+            user.setPassword(Encryptor.encrypt(user.getPassword()));
             user.setCode(Generator.getRandomDigits(5));
             user.setStatus(0);
             userRepository.add(user);
@@ -35,26 +36,24 @@ public class UserService {
     }
 
 
-    public User login(String username, String password) throws InternalServerException, NotFoundException, UnverifiedException {
+    public User login(String username, String password) throws Exception {
         try {
             User user = userRepository.getByUsername(username);
-            NotFoundException.check(user == null || !Md5Encoder.matches(password, user.getPassword()), INVALID_CREDENTIALS_MESSAGE);
+            NotFoundException.check(user == null || (!Encryptor.decrypt(user.getPassword()).equals(password)), INVALID_CREDENTIALS_MESSAGE);
             UnverifiedException.check(user.getStatus() != 1, UNVERIFIED_MESSAGE);
             return user;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new InternalServerException(INTERNAL_ERROR_MESSAGE);
         }
-
-
     }
 
-    public User changePassword(String username, String password, String newPassword) throws NotFoundException, InternalServerException, AccessDeniedException {
+    public User changePassword(String username, String password, String newPassword) throws Exception {
         try {
             User user = userRepository.getByUsername(username);
             NotFoundException.check(user == null, USER_NOT_EXIST_MESSAGE);
-            AccessDeniedException.check(!user.getPassword().equals(password), WRONG_PASSWORD_MESSAGE);
-            user.setPassword(newPassword);
+            AccessDeniedException.check(!Encryptor.encrypt(password).equals(user.getPassword()), WRONG_PASSWORD_MESSAGE);
+            user.setPassword(Encryptor.encrypt(newPassword));
             userRepository.update(user);
             return user;
         } catch (SQLException e) {

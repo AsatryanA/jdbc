@@ -50,6 +50,8 @@ public class ChangePasswordServlet extends HttpServlet {
         } catch (NotFoundException | InternalServerException | InvalidParametersException | AccessDeniedException e) {
             request.setAttribute(MESSAGE_ATTRIBUTE_KEY, e.getMessage());
             request.getRequestDispatcher(HOME_PAGE).forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }

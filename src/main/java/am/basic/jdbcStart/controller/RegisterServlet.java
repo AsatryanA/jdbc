@@ -44,6 +44,8 @@ public class RegisterServlet extends HttpServlet {
         } catch (DuplicateDataException | InternalServerException ex) {
             request.setAttribute(MESSAGE_ATTRIBUTE_KEY, ex.getMessage());
             request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
 
